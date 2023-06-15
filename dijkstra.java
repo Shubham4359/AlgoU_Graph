@@ -1,67 +1,59 @@
 import java.io.*;
 import java.util.*;
-
-public class Main
-{
-  static class Pair implements Comparable<Pair>{
-      int node;
-      long weight;
-
-      Pair(int node, long weight){
-          this.node = node;
-          this.weight = weight;
-      }
-      
-      public int compareTo(Pair p){
-          return Long.compare(weight, p.weight); 
-      }
-  }
-    
-	public static void main(String[] args) throws IOException {
-		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		String[] in = br.readLine().split(" ");
-		
-		int N = Integer.parseInt(in[0]);
-		int M = Integer.parseInt(in[1]);
-		
-		List<List<Pair>> graph = new ArrayList<List<Pair>>();
-		for(int i = 0; i <= N; i++){
-		    graph.add(new ArrayList<Pair>());
-		}
-		
-		for(int i = 0; i < M; i++){
-		    in = br.readLine().split(" ");
-		    int u = Integer.parseInt(in[0]);
-		    int v = Integer.parseInt(in[1]);
-		    int f = Integer.parseInt(in[2]);
-		    graph.get(u).add(new Pair(v, f));
-		}
-		
-		long[] dist1 = dijkstra(1, graph);
-	}
+public class Main {
+ 
+	static HashMap<Integer,ArrayList<Node>> adjList = new HashMap<>();
 	
-	public static long[] dijkstra(int src, List<List<Pair>> graph){
-	    long[] dist = new long[graph.size()];
-	    Arrays.fill(dist, Long.MAX_VALUE);
-	    dist[src] = 0;
-	    
-	    PriorityQueue<Pair> pq = new PriorityQueue<>();
-	    pq.add(new Pair(src, 0));
-	    
-	    while(pq.size() > 0){
-	        Pair p = pq.poll();
-	        int u = p.node;
-	        
-	        for(Pair child: graph.get(u)){
-	            long w = child.weight;
-	           // System.out.println(u + " - " + child.node + " " + w);
-	            if(dist[u] + w < dist[child.node]){
-	                dist[child.node] = dist[u] + w;
-	                pq.add(new Pair(child.node, dist[u] + w));
-	            }
-	        }
+	static class Node{
+	    public int dest;
+	    public long weight;
+	    public Node(int to, long weight){
+		    this.dest = to;
+		    this.weight = weight;
 	    }
-	    
-	    return dist;
+	
+	
+	    public long getWeight(){
+	    	return this.weight;
+	    }
+	}
+
+	public static void main(String[] args) throws IOException{
+	    BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
+	    BufferedWriter bw=new BufferedWriter(new OutputStreamWriter(System.out));
+	    String[] s = br.readLine().trim().split(" ");
+	    int nodes =Integer.parseInt(s[0]);
+	    int edges =Integer.parseInt(s[1]);
+	    for(int i = 1; i <= nodes ; i++){
+	    	adjList.put(i,new ArrayList<Node>());
+	    }
+	    while(edges-->0){
+	    	s=br.readLine().trim().split(" ");
+	    	int src = Integer.parseInt(s[0]);
+	    	int d = Integer.parseInt(s[1]);
+	    	long w = Long.parseLong(s[2]);
+	    	adjList.get(src).add(new Node(d,w));
+	    }
+	    long[] sorceDijktra = Dijkstra(adjList,1,nodes);
+	}
+
+	public static long[] Dijkstra(HashMap<Integer,ArrayList<Node>> adjList,int src, int nodes){
+	    boolean[] visited = new boolean[nodes+1];
+	    long[] distance = new long[nodes+1];
+	    Arrays.fill(distance,Integer.MAX_VALUE);
+	    Comparator<Node> NodeComparator= Comparator.comparingLong(Node::getWeight);
+	    PriorityQueue<Node> qu = new PriorityQueue<>(NodeComparator);
+	    qu.add(new Node(src,0));
+	    while(!qu.isEmpty()){
+		    Node source = qu.remove();
+		    if(visited[source.dest])
+		    continue;
+		    visited[source.dest] = true;
+		    distance[source.dest]=source.getWeight();
+		    for(Node neighbour : adjList.get(source.dest)){
+		    	qu.add(new Node(neighbour.dest,source.getWeight()+neighbour.getWeight()));
+		    }
+	    }
+	    return distance;
 	}
 }
